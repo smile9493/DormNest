@@ -2,17 +2,16 @@ import apiClient from './client';
 import type {
   Student,
   CheckInRequest,
-  CheckInResponse,
-  CheckOutResponse,
+  CheckOutRequest,
 } from '@/types/api';
 
 /** 获取学生列表 */
 export const getStudents = async (
   studentNo?: string,
   name?: string,
-  params?: { page?: number; page_size?: number }
-): Promise<{ items: Student[] }> => {
-  const queryParams: any = { ...params };
+  params?: { skip?: number; limit?: number }
+): Promise<Student[]> => {
+  const queryParams: Record<string, unknown> = { ...params };
 
   if (studentNo !== undefined && studentNo.trim() !== '') {
     queryParams.student_no = studentNo;
@@ -26,8 +25,7 @@ export const getStudents = async (
     params: queryParams,
   });
 
-  // 后端返回数组，前端需要包装成 { items: [] } 格式
-  return { items: response.data };
+  return response.data;
 };
 
 /** 获取单个学生详情 */
@@ -39,9 +37,9 @@ export const getStudentById = async (studentId: number): Promise<Student> => {
 /** 学生入住办理 */
 export const checkIn = async (
   data: CheckInRequest
-): Promise<CheckInResponse> => {
-  const response = await apiClient.post<CheckInResponse>(
-    '/students/check-in',
+): Promise<{ message: string; bed_number: number }> => {
+  const response = await apiClient.post<{ message: string; bed_number: number }>(
+    '/students/checkin',
     data
   );
   return response.data;
@@ -49,12 +47,11 @@ export const checkIn = async (
 
 /** 学生退宿 */
 export const checkOut = async (
-  studentId: number,
-  checkOutDate?: string
-): Promise<CheckOutResponse> => {
-  const response = await apiClient.post<CheckOutResponse>(
-    `/students/${studentId}/check-out`,
-    { check_out_date: checkOutDate }
+  data: CheckOutRequest
+): Promise<{ message: string }> => {
+  const response = await apiClient.post<{ message: string }>(
+    '/students/checkout',
+    data
   );
   return response.data;
 };

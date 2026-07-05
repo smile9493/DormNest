@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -30,9 +30,10 @@ const statusStyles: Record<InputStatus, string> = {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, success, hint, icon, status = 'default', className, id, ...props }, ref) => {
+    const generatedId = useId();
     // 自动根据 error 或 success 设置状态
     const autoStatus: InputStatus = error ? 'error' : success ? 'success' : status;
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const inputId = id || generatedId;
 
     return (
       <div className="w-full">

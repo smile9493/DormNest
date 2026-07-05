@@ -5,6 +5,7 @@ from app.dependencies import get_db
 from app.models.student import Student
 from app.models.dormitory import Dormitory
 from app.models.building import Building
+from app.models.check_in_record import CheckInRecord
 from app.schemas.student_schema import (
     StudentResponse,
     StudentCreate,
@@ -183,6 +184,17 @@ def check_in(
     if dormitory.occupied_beds >= dormitory.bed_count:
         dormitory.status = "full"
 
+    # 写入入住审计记录
+    record = CheckInRecord(
+        student_id=student.student_id,
+        dorm_id=dormitory.dorm_id,
+        bed_number=bed_number,
+        check_in_date=date.today(),
+        reason="入住",
+        operator_id=current_user.user_id
+    )
+    db.add(record)
+
     db.commit()
     return {"message": "入住成功", "bed_number": bed_number}
 
@@ -218,6 +230,18 @@ def check_out(
     if dormitory:
         dormitory.occupied_beds -= 1
         dormitory.status = "available"
+
+    # 写入退宿审计记录
+    record = CheckInRecord(
+        student_id=student.student_id,
+        dorm_id=dorm_id,
+        bed_number=bed_number,
+        check_in_date=student.check_in_date,
+        check_out_date=date.today(),
+        reason="退宿",
+        operator_id=current_user.user_id
+    )
+    db.add(record)
 
     db.commit()
     return {"message": "退宿成功"}

@@ -61,7 +61,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/register")
+@router.post("/register", status_code=501)
 def register():
     """用户注册（待实现）"""
-    return {"message": "注册功能待实现"}
+    raise HTTPException(status_code=501, detail="注册功能尚未实现")

@@ -32,7 +32,7 @@ export default function Header() {
               <User className="w-4 h-4 text-white" />
             </div>
             <div className="text-sm">
-              <p className="font-medium text-gray-700">{user?.name || '未登录'}</p>
+              <p className="font-medium text-gray-700">{user?.real_name || user?.username || '未登录'}</p>
               <p className="text-xs text-gray-500">
                 {user?.role === 'admin' && '系统管理员'}
                 {user?.role === 'student' && '学生'}

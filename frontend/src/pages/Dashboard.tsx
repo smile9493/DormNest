@@ -18,6 +18,7 @@ import {
   getChargeStatistics,
   getAnnouncements,
 } from '@/api';
+import type { Announcement, OccupancyStatistics, RepairStatistics, ChargeStatistics } from '@/types/api';
 
 export const Dashboard: React.FC = () => {
   // 获取入住率统计
@@ -59,7 +60,7 @@ export const Dashboard: React.FC = () => {
     isLoading: announcementsLoading,
   } = useQuery({
     queryKey: ['announcements', 'latest'],
-    queryFn: () => getAnnouncements({ page: 1, page_size: 5 }),
+    queryFn: () => getAnnouncements({ limit: 5 }),
   });
 
   const isLoading = occupancyLoading || repairLoading || chargeLoading;
@@ -77,45 +78,41 @@ export const Dashboard: React.FC = () => {
       title: '总宿舍数',
       value: occupancyData?.total_dormitories ?? 0,
       icon: Home,
-      trend: occupancyData?.available_dormitories ?? 0,
-      trendLabel: '可用房间',
+      trend: occupancyData?.available_beds ?? 0,
+      trendLabel: '可用床位',
       color: 'text-[#1E40AF]',
       bgColor: 'bg-gradient-to-br from-[#1E40AF] to-[#3B82F6]',
-      lightBg: 'bg-[#1E40AF]/10',
-      percentage: occupancyData?.total_dormitories ? ((occupancyData?.available_dormitories ?? 0) / occupancyData.total_dormitories) * 100 : 0,
+      percentage: occupancyData?.total_beds ? ((occupancyData?.available_beds ?? 0) / occupancyData.total_beds) * 100 : 0,
     },
     {
       title: '入住率',
       value: `${(occupancyData?.occupancy_rate ?? 0).toFixed(1)}%`,
       icon: TrendingUp,
-      trend: occupancyData?.occupied_dormitories ?? 0,
-      trendLabel: '已入住房间',
+      trend: occupancyData?.occupied_beds ?? 0,
+      trendLabel: '已入床位',
       color: 'text-[#10B981]',
       bgColor: 'bg-gradient-to-br from-[#10B981] to-[#34D399]',
-      lightBg: 'bg-[#10B981]/10',
       percentage: occupancyData?.occupancy_rate ?? 0,
     },
     {
       title: '待处理报修',
-      value: repairData?.pending_repairs ?? 0,
+      value: repairData?.pending ?? 0,
       icon: Wrench,
-      trend: repairData?.in_progress_repairs ?? 0,
+      trend: repairData?.processing ?? 0,
       trendLabel: '处理中',
       color: 'text-[#F59E0B]',
       bgColor: 'bg-gradient-to-br from-[#F59E0B] to-[#FBBF24]',
-      lightBg: 'bg-[#F59E0B]/10',
-      percentage: repairData?.pending_repairs && repairData?.in_progress_repairs ? ((repairData.pending_repairs / (repairData.pending_repairs + repairData.in_progress_repairs)) * 100) : 0,
+      percentage: repairData?.pending && repairData?.processing ? ((repairData.pending / (repairData.pending + repairData.processing)) * 100) : 0,
     },
     {
       title: '待缴费金额',
-      value: `¥${(chargeData?.pending_amount ?? 0).toFixed(2)}`,
+      value: `¥${(chargeData?.unpaid?.amount ?? 0).toFixed(2)}`,
       icon: DollarSign,
-      trend: chargeData?.overdue_amount ?? 0,
+      trend: chargeData?.overdue?.amount ?? 0,
       trendLabel: '已逾期',
       color: 'text-[#EF4444]',
       bgColor: 'bg-gradient-to-br from-[#EF4444] to-[#F87171]',
-      lightBg: 'bg-[#EF4444]/10',
-      percentage: chargeData?.pending_amount && chargeData?.overdue_amount ? ((chargeData.overdue_amount / chargeData.pending_amount) * 100) : 0,
+      percentage: chargeData?.unpaid?.amount && chargeData?.overdue?.amount ? ((chargeData.overdue.amount / chargeData.unpaid.amount) * 100) : 0,
     },
   ];
 
@@ -249,26 +246,28 @@ export const Dashboard: React.FC = () => {
               <div className="flex items-center justify-center py-8">
                 <RefreshCw className="h-6 w-6 text-gray-400 animate-spin" />
               </div>
-            ) : announcementsData?.items && announcementsData.items.length > 0 ? (
-              announcementsData.items.map((item) => (
+            ) : announcementsData && announcementsData.length > 0 ? (
+              announcementsData.map((item: Announcement) => (
                 <div
-                  key={item.id}
+                  key={item.announcement_id}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3 flex-1">
-                    {item.is_pinned && (
+                    {item.is_top && (
                       <span className="h-2 w-2 rounded-full bg-[#EF4444] animate-pulse" />
                     )}
                     <Badge
-                      variant={item.is_pinned ? 'error' : 'default'}
+                      variant={item.is_top ? 'error' : 'default'}
                       size="sm"
                     >
-                      {item.is_pinned ? '重要' : '普通'}
+                      {item.is_top ? '重要' : '普通'}
                     </Badge>
                     <span className="text-sm text-gray-900 flex-1">{item.title}</span>
                   </div>
                   <span className="text-xs text-gray-400">
-                    {new Date(item.published_at).toLocaleDateString('zh-CN')}
+                    {item.publish_time
+                      ? new Date(item.publish_time).toLocaleDateString('zh-CN')
+                      : new Date(item.created_at).toLocaleDateString('zh-CN')}
                   </span>
                 </div>
               ))

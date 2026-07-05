@@ -1,13 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, date
-from decimal import Decimal
 
 
 class ChargeBase(BaseModel):
     """费用账单基础模型"""
     charge_type: str
-    amount: Decimal
+    amount: float
     charge_date: date
     due_date: Optional[date] = None
     memo: Optional[str] = None

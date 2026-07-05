@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
 from datetime import datetime
 
 
@@ -26,7 +26,7 @@ class RepairUpdate(BaseModel):
 
 class RepairStatusUpdate(BaseModel):
     """更新工单状态模型"""
-    status: str
+    status: Literal["pending", "assigned", "processing", "completed", "cancelled"]
     assigned_to: Optional[int] = None
     feedback: Optional[str] = None
 

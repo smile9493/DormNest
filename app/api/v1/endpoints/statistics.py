@@ -22,12 +22,12 @@ def get_occupancy_statistics(
     """获取入住率统计（管理员权限）"""
     
     # 总宿舍数和总床位数
-    total_dormitories = db.query(func.count(Dormitory.dorm_id)).scalar()
-    total_beds = db.query(func.sum(Dormitory.bed_count)).scalar()
-    
+    total_dormitories = db.query(func.count(Dormitory.dorm_id)).scalar() or 0
+    total_beds = db.query(func.sum(Dormitory.bed_count)).scalar() or 0
+
     # 已入住人数
-    occupied_beds = db.query(func.sum(Dormitory.occupied_beds)).scalar()
-    
+    occupied_beds = db.query(func.sum(Dormitory.occupied_beds)).scalar() or 0
+
     # 入住率
     occupancy_rate = (occupied_beds / total_beds * 100) if total_beds else 0
     
@@ -41,13 +41,15 @@ def get_occupancy_statistics(
     
     buildings_data = []
     for stat in buildings_stats:
-        building_rate = (stat.occupied_beds / stat.total_beds * 100) if stat.total_beds else 0
+        stat_total_beds = stat.total_beds or 0
+        stat_occupied_beds = stat.occupied_beds or 0
+        building_rate = (stat_occupied_beds / stat_total_beds * 100) if stat_total_beds else 0
         buildings_data.append({
             "build_name": stat.build_name,
-            "total_rooms": stat.total_rooms,
-            "total_beds": stat.total_beds,
-            "occupied_beds": stat.occupied_beds,
-            "available_beds": stat.total_beds - stat.occupied_beds,
+            "total_rooms": stat.total_rooms or 0,
+            "total_beds": stat_total_beds,
+            "occupied_beds": stat_occupied_beds,
+            "available_beds": stat_total_beds - stat_occupied_beds,
             "occupancy_rate": round(building_rate, 2)
         })
     

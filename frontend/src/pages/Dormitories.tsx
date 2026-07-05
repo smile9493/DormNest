@@ -23,15 +23,14 @@ export const Dormitories: React.FC = () => {
 
   // 获取宿舍列表
   const {
-    data: dormitoriesData,
+    data: dormitories,
     isLoading: dormitoriesLoading,
     refetch: refetchDormitories,
   } = useQuery({
     queryKey: ['dormitories', selectedBuilding, filterStatus],
     queryFn: () => getDormitories(
       selectedBuilding,
-      filterStatus === 'all' ? undefined : filterStatus,
-      { page: 1, page_size: 100 }
+      filterStatus === 'all' ? undefined : filterStatus
     ),
     enabled: !!selectedBuilding,
   });
@@ -40,13 +39,13 @@ export const Dormitories: React.FC = () => {
 
   // 根据楼栋计算统计信息
   const getBuildingStats = (buildingId: number) => {
-    const buildingDormitories = dormitoriesData?.items.filter(d => d.build_id === buildingId) || [];
+    const buildingDormitories = dormitories?.filter(d => d.build_id === buildingId) || [];
     const totalRooms = buildingDormitories.length;
     const availableRooms = buildingDormitories.filter(d => d.status === 'available').length;
-    const occupiedRooms = buildingDormitories.filter(d => d.status === 'occupied').length;
+    const fullRooms = buildingDormitories.filter(d => d.status === 'full').length;
     const maintenanceRooms = buildingDormitories.filter(d => d.status === 'maintenance').length;
 
-    return { totalRooms, availableRooms, occupiedRooms, maintenanceRooms };
+    return { totalRooms, availableRooms, fullRooms, maintenanceRooms };
   };
 
   // 确定楼栋状态
@@ -62,7 +61,7 @@ export const Dormitories: React.FC = () => {
   };
 
   const filteredBuildings = buildings?.filter((b: Building) =>
-    searchTerm === '' || b.name.toLowerCase().includes(searchTerm.toLowerCase())
+    searchTerm === '' || b.build_name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
   const getEmptyRate = (available: number, total: number) => ((available / total) * 100).toFixed(1);
@@ -79,7 +78,7 @@ export const Dormitories: React.FC = () => {
   const getRoomStatusBadge = (status: DormitoryStatus) => {
     const config = {
       available: { variant: 'success' as const, label: '空闲' },
-      occupied: { variant: 'primary' as const, label: '已入住' },
+      full: { variant: 'primary' as const, label: '已满' },
       maintenance: { variant: 'warning' as const, label: '维修中' }
     };
     return <Badge variant={config[status].variant} size="sm">{config[status].label}</Badge>;
@@ -88,7 +87,7 @@ export const Dormitories: React.FC = () => {
   const filterButtons = [
     { status: 'all' as const, label: '全部', color: 'bg-[#1E40AF]' },
     { status: 'available' as const, label: '可用', color: 'bg-[#10B981]' },
-    { status: 'occupied' as const, label: '已入住', color: 'bg-[#EF4444]' },
+    { status: 'full' as const, label: '已满', color: 'bg-[#EF4444]' },
     { status: 'maintenance' as const, label: '维修中', color: 'bg-[#F59E0B]' },
   ];
 
@@ -173,13 +172,13 @@ export const Dormitories: React.FC = () => {
       {!buildingsLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredBuildings.map((building: Building) => {
-            const isExpanded = selectedBuilding === building.id;
-            const stats = getBuildingStats(building.id);
-            const buildingStatus = getBuildingStatus(building.id);
-            const dormitories = dormitoriesData?.items.filter(d => d.build_id === building.id) || [];
+            const isExpanded = selectedBuilding === building.build_id;
+            const stats = getBuildingStats(building.build_id);
+            const buildingStatus = getBuildingStatus(building.build_id);
+            const buildingDormitories = dormitories?.filter(d => d.build_id === building.build_id) || [];
 
             return (
-              <div key={building.id} className="space-y-2">
+              <div key={building.build_id} className="space-y-2">
                 <Card
                   shadow="lg"
                   className={`cursor-pointer transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl border-2 ${
@@ -190,7 +189,7 @@ export const Dormitories: React.FC = () => {
                 >
                   <div
                     className="p-5"
-                    onClick={() => setSelectedBuilding(isExpanded ? null : building.id)}
+                    onClick={() => setSelectedBuilding(isExpanded ? null : building.build_id)}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -205,10 +204,10 @@ export const Dormitories: React.FC = () => {
                         </div>
                         <div>
                           <span className="font-bold text-gray-900 text-lg">
-                            {building.name}
+                            {building.build_name}
                           </span>
                           <p className="text-xs text-gray-500 mt-1">
-                            {building.floors}层 · {stats.totalRooms}个房间
+                            {building.dorm_floor}层 · {stats.totalRooms}个房间
                           </p>
                         </div>
                       </div>
@@ -272,17 +271,17 @@ export const Dormitories: React.FC = () => {
                   </Card>
                 )}
 
-                {isExpanded && !dormitoriesLoading && dormitories.length > 0 && (
+                {isExpanded && !dormitoriesLoading && buildingDormitories.length > 0 && (
                   <Card shadow="md" className="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 overflow-hidden">
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-semibold text-gray-700">房间列表</h3>
-                        <span className="text-xs text-gray-500">{dormitories.length} 个房间</span>
+                        <span className="text-xs text-gray-500">{buildingDormitories.length} 个房间</span>
                       </div>
                       <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
-                        {dormitories.map((dormitory: Dormitory, idx: number) => (
+                        {buildingDormitories.map((dormitory: Dormitory, idx: number) => (
                           <div
-                            key={dormitory.id}
+                            key={dormitory.dorm_id}
                             className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
                               idx % 2 === 0 
                                 ? 'bg-white hover:bg-[#1E40AF]/5' 
@@ -293,14 +292,14 @@ export const Dormitories: React.FC = () => {
                               <div className={`p-2 rounded-lg ${
                                 dormitory.status === 'available' 
                                   ? 'bg-[#10B981]/10' 
-                                  : dormitory.status === 'occupied' 
+                                  : dormitory.status === 'full' 
                                     ? 'bg-[#1E40AF]/10' 
                                     : 'bg-[#F59E0B]/10'
                               }`}>
                                 <DoorOpen className={`h-4 w-4 ${
                                   dormitory.status === 'available' 
                                     ? 'text-[#10B981]' 
-                                    : dormitory.status === 'occupied' 
+                                    : dormitory.status === 'full' 
                                       ? 'text-[#1E40AF]' 
                                       : 'text-[#F59E0B]'
                                 }`} />
@@ -313,7 +312,7 @@ export const Dormitories: React.FC = () => {
                             <div className="flex items-center gap-2 text-xs text-gray-500">
                               <Users className="h-4 w-4" />
                               <span className="font-medium">
-                                {dormitory.current_occupancy}/{dormitory.capacity}
+                                {dormitory.occupied_beds}/{dormitory.bed_count}
                               </span>
                             </div>
                           </div>

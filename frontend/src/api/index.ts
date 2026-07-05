@@ -43,8 +43,7 @@ export {
 // 费用管理 API
 export {
   getMyCharges,
-  getAllCharges,
-  getChargeById,
+  getStudentCharges,
   payCharge,
 } from './charges';
 
@@ -52,9 +51,6 @@ export {
 export {
   getAnnouncements,
   getAnnouncementById,
-  createAnnouncement,
-  updateAnnouncement,
-  deleteAnnouncement,
 } from './announcements';
 
 // 统计数据 API

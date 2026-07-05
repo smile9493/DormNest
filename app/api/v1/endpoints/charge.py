@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from app.dependencies import get_db
 from app.models.charge import Charge
 from app.models.student import Student
@@ -97,7 +97,7 @@ def pay_charge(
 
     # 更新缴费状态
     db_charge.pay_status = "paid"
-    db_charge.pay_date = datetime.now()
+    db_charge.pay_date = datetime.now(timezone.utc)
     if pay_request.pay_method:
         db_charge.pay_method = pay_request.pay_method
 

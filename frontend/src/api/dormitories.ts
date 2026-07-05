@@ -24,8 +24,8 @@ export const getBuildingById = async (
 export const getDormitories = async (
   buildId?: number,
   status?: DormitoryStatus,
-  params?: { page?: number; page_size?: number }
-): Promise<{ items: Dormitory[] }> => {
+  params?: { skip?: number; limit?: number }
+): Promise<Dormitory[]> => {
   const queryParams: DormitoriesRequest = { ...params };
 
   if (buildId !== undefined) {
@@ -40,8 +40,7 @@ export const getDormitories = async (
     params: queryParams,
   });
 
-  // 后端返回数组，前端需要包装成 { items: [] } 格式
-  return { items: response.data };
+  return response.data;
 };
 
 /** 获取单个宿舍详情 */

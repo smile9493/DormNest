@@ -76,6 +76,10 @@ def update_user(
     if not db_user:
         raise HTTPException(status_code=404, detail="用户不存在")
 
+    # 禁止管理员停用自己的账号
+    if user_id == current_user.user_id and user_update.is_active is False:
+        raise HTTPException(status_code=400, detail="不能停用自己的账号")
+
     # 更新字段
     for key, value in user_update.dict(exclude_unset=True).items():
         setattr(db_user, key, value)
@@ -92,6 +96,10 @@ def delete_user(
     current_user: User = Depends(require_role(["admin"]))
 ):
     """删除用户（管理员权限）"""
+    # 禁止管理员删除自己的账号
+    if user_id == current_user.user_id:
+        raise HTTPException(status_code=400, detail="不能删除自己的账号")
+
     db_user = db.query(User).filter(User.user_id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="用户不存在")

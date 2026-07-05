@@ -1,12 +1,12 @@
 import apiClient from './client';
-import type { Repair, RepairStatus } from '@/types/api';
+import type { Repair, RepairStatus, RepairCreateRequest, RepairStatusUpdateRequest } from '@/types/api';
 
 /** 获取报修工单列表 */
 export const getRepairs = async (
   status?: RepairStatus,
-  params?: { page?: number; page_size?: number }
-): Promise<{ items: Repair[] }> => {
-  const queryParams: any = { ...params };
+  params?: { skip?: number; limit?: number }
+): Promise<Repair[]> => {
+  const queryParams: Record<string, unknown> = { ...params };
 
   if (status !== undefined) {
     queryParams.status = status;
@@ -16,8 +16,7 @@ export const getRepairs = async (
     params: queryParams,
   });
 
-  // 后端返回数组，前端需要包装成 { items: [] } 格式
-  return { items: response.data };
+  return response.data;
 };
 
 /** 获取单个报修工单详情 */
@@ -27,13 +26,7 @@ export const getRepairById = async (repairId: number): Promise<Repair> => {
 };
 
 /** 创建报修工单 */
-export const createRepair = async (data: {
-  title: string;
-  description: string;
-  type: string;
-  priority: 'low' | 'medium' | 'high';
-  location: string;
-}): Promise<Repair> => {
+export const createRepair = async (data: RepairCreateRequest): Promise<Repair> => {
   const response = await apiClient.post<Repair>('/repairs', data);
   return response.data;
 };
@@ -41,10 +34,8 @@ export const createRepair = async (data: {
 /** 更新报修工单状态 */
 export const updateRepairStatus = async (
   repairId: number,
-  status: RepairStatus
+  data: RepairStatusUpdateRequest
 ): Promise<Repair> => {
-  const response = await apiClient.put<Repair>(`/repairs/${repairId}/status`, {
-    status,
-  });
+  const response = await apiClient.put<Repair>(`/repairs/${repairId}/status`, data);
   return response.data;
 };

@@ -7,12 +7,14 @@ import {
   Bell,
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import type { UserRole } from '@/context/AuthContext';
 
 interface MenuItem {
   path: string;
   name: string;
   icon: React.ReactNode;
-  roles: ('admin' | 'student' | 'repairman')[]; // 权限控制
+  roles: UserRole[];
 }
 
 const menuItems: MenuItem[] = [
@@ -55,16 +57,14 @@ const menuItems: MenuItem[] = [
 ];
 
 export default function Sidebar() {
-  // TODO: 从 useAuth 获取当前用户角色进行权限过滤
-  // const { user } = useAuth();
+  const { user } = useAuth();
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 fixed top-16 left-0 bottom-0 z-40 overflow-y-auto">
       <nav className="p-4">
         <ul className="space-y-2">
           {menuItems.map((item) => {
-            // TODO: 根据用户角色过滤菜单项
-            // if (!user || !item.roles.includes(user.role)) return null;
+            if (!user || !item.roles.includes(user.role)) return null;
 
             return (
               <li key={item.path}>

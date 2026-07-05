@@ -1,12 +1,12 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, Literal
 from datetime import datetime
 
 
 class UserBase(BaseModel):
     """用户基础模型"""
     username: str
-    role: str
+    role: Literal["admin", "student", "repairman"]
     real_name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
@@ -14,7 +14,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """用户创建模型"""
-    password: str
+    password: str = Field(..., min_length=6)
     student_id: Optional[int] = None
 
 

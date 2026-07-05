@@ -2,12 +2,12 @@ import { createContext, useState, useContext, useEffect, ReactNode } from 'react
 import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/auth';
 import type { UserInfo } from '@/types/api';
 
-export type UserRole = 'admin' | 'dorm_manager' | 'student';
+export type UserRole = 'admin' | 'student' | 'repairman';
 
 export interface User {
   id: number;
   username: string;
-  name: string;
+  real_name?: string;
   role: UserRole;
   email?: string;
   phone?: string;
@@ -30,38 +30,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 从本地存储恢复用户信息
-    const storedUser = localStorage.getItem(USER_KEY);
     const token = localStorage.getItem('access_token');
 
-    if (storedUser && token) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem('access_token');
-      }
+    if (token) {
+      // 通过服务端验证 token 有效性并获取最新用户信息
+      getCurrentUser()
+        .then((res) => {
+          const serverUser = res.data as UserInfo;
+          const userInfo: User = {
+            id: serverUser.id,
+            username: serverUser.username,
+            real_name: serverUser.real_name,
+            role: serverUser.role as UserRole,
+            email: serverUser.email,
+            phone: serverUser.phone,
+          };
+          localStorage.setItem(USER_KEY, JSON.stringify(userInfo));
+          setUser(userInfo);
+        })
+        .catch(() => {
+          // token 无效或过期，清除本地存储
+          localStorage.removeItem(USER_KEY);
+          localStorage.removeItem('access_token');
+          setUser(null);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (username: string, password: string) => {
     try {
-      // 调用真实API登录
       const response = await apiLogin(username, password);
 
-      // 转换用户信息
       const userInfo: User = {
         id: response.user.id,
         username: response.user.username,
-        name: response.user.real_name || response.user.username,
+        real_name: response.user.real_name,
         role: response.user.role as UserRole,
         email: response.user.email,
         phone: response.user.phone,
       };
 
-      // 保存用户信息到本地存储
       localStorage.setItem(USER_KEY, JSON.stringify(userInfo));
       setUser(userInfo);
     } catch (error) {

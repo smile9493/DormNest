@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { Building2, User, Lock, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import type { ApiError } from '@/types/api';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -23,10 +24,14 @@ export default function Login() {
 
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // 读取重定向目标路径
+  const redirectPath = searchParams.get('redirect') || '/dashboard';
 
   // 如果已登录，重定向到仪表盘
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={redirectPath} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,9 +41,10 @@ export default function Login() {
 
     try {
       await login(username, password);
-      navigate('/dashboard');
+      navigate(redirectPath);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '登录失败，请重试');
+      const apiErr = err as ApiError;
+      setError(apiErr?.message || (err instanceof Error ? err.message : '登录失败，请重试'));
     } finally {
       setIsLoading(false);
     }
@@ -89,15 +95,17 @@ export default function Login() {
               <p className="text-gray-500">请输入您的账号信息</p>
             </div>
 
-            {/* 测试账号提示 */}
+            {/* 测试账号提示 - 仅开发环境显示 */}
+            {import.meta.env.DEV && (
             <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
               <p className="text-sm text-blue-800 font-medium mb-2">测试账号：</p>
               <div className="text-xs text-blue-600 space-y-1">
-                <p>管理员：admin / 任意密码</p>
-                <p>学生：student / 任意密码</p>
-                <p>维修：repairman / 任意密码</p>
+                <p>管理员：admin</p>
+                <p>学生：student</p>
+                <p>维修：repairman</p>
               </div>
             </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* 错误提示 */}
