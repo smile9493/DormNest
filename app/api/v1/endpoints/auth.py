@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from app.dependencies import get_db
 from app.models.user import User
-from app.schemas.auth_schema import LoginRequest, Token
+from app.schemas.auth_schema import LoginRequest, Token, LoginResponse
 from app.utils.auth import create_access_token
 from app.utils.hash import verify_password
 from app.config import settings
@@ -11,7 +11,7 @@ from app.config import settings
 router = APIRouter()
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=LoginResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     """用户登录"""
     # 查找用户
@@ -46,7 +46,19 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         expires_delta=access_token_expires
     )
 
-    return Token(access_token=access_token, token_type="bearer")
+    # 返回 token 和用户信息
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.user_id,
+            "username": user.username,
+            "real_name": user.real_name,
+            "role": user.role,
+            "email": user.email,
+            "phone": user.phone
+        }
+    }
 
 
 @router.post("/register")

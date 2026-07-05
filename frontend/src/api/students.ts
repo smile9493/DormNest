@@ -1,8 +1,6 @@
 import apiClient from './client';
 import type {
   Student,
-  StudentsRequest,
-  StudentsResponse,
   CheckInRequest,
   CheckInResponse,
   CheckOutResponse,
@@ -13,8 +11,8 @@ export const getStudents = async (
   studentNo?: string,
   name?: string,
   params?: { page?: number; page_size?: number }
-): Promise<StudentsResponse> => {
-  const queryParams: StudentsRequest = { ...params };
+): Promise<{ items: Student[] }> => {
+  const queryParams: any = { ...params };
 
   if (studentNo !== undefined && studentNo.trim() !== '') {
     queryParams.student_no = studentNo;
@@ -24,11 +22,12 @@ export const getStudents = async (
     queryParams.name = name;
   }
 
-  const response = await apiClient.get<StudentsResponse>('/students', {
+  const response = await apiClient.get<Student[]>('/students', {
     params: queryParams,
   });
 
-  return response.data;
+  // 后端返回数组，前端需要包装成 { items: [] } 格式
+  return { items: response.data };
 };
 
 /** 获取单个学生详情 */

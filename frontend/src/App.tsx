@@ -2,61 +2,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import Login from '@/pages/Login';
-
-// 占位符页面组件
-function Dashboard() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">仪表盘</h1>
-      <p className="text-gray-600">仪表盘页面 - 开发中</p>
-    </div>
-  );
-}
-
-function Dormitories() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">宿舍管理</h1>
-      <p className="text-gray-600">宿舍管理页面 - 开发中</p>
-    </div>
-  );
-}
-
-function Students() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">学生管理</h1>
-      <p className="text-gray-600">学生管理页面 - 开发中</p>
-    </div>
-  );
-}
-
-function Repairs() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">报修中心</h1>
-      <p className="text-gray-600">报修中心页面 - 开发中</p>
-    </div>
-  );
-}
-
-function Charges() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">费用管理</h1>
-      <p className="text-gray-600">费用管理页面 - 开发中</p>
-    </div>
-  );
-}
-
-function Announcements() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">公告通知</h1>
-      <p className="text-gray-600">公告通知页面 - 开发中</p>
-    </div>
-  );
-}
+import { Dashboard } from '@/pages/Dashboard';
+import { Dormitories } from '@/pages/Dormitories';
+import Students from '@/pages/Students';
+import Repairs from '@/pages/Repairs';
+import Charges from '@/pages/Charges';
+import Announcements from '@/pages/Announcements';
 
 export default function App() {
   return (

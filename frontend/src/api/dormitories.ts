@@ -1,17 +1,14 @@
 import apiClient from './client';
 import type {
   Building,
-  BuildingsResponse,
   Dormitory,
   DormitoriesRequest,
-  DormitoriesResponse,
-  DormitoryDetailResponse,
   DormitoryStatus,
 } from '@/types/api';
 
 /** 获取楼栋列表 */
-export const getBuildings = async (): Promise<BuildingsResponse> => {
-  const response = await apiClient.get<BuildingsResponse>('/buildings');
+export const getBuildings = async (): Promise<Building[]> => {
+  const response = await apiClient.get<Building[]>('/buildings');
   return response.data;
 };
 
@@ -28,7 +25,7 @@ export const getDormitories = async (
   buildId?: number,
   status?: DormitoryStatus,
   params?: { page?: number; page_size?: number }
-): Promise<DormitoriesResponse> => {
+): Promise<{ items: Dormitory[] }> => {
   const queryParams: DormitoriesRequest = { ...params };
 
   if (buildId !== undefined) {
@@ -39,18 +36,19 @@ export const getDormitories = async (
     queryParams.status = status;
   }
 
-  const response = await apiClient.get<DormitoriesResponse>('/dormitories', {
+  const response = await apiClient.get<Dormitory[]>('/dormitories', {
     params: queryParams,
   });
 
-  return response.data;
+  // 后端返回数组，前端需要包装成 { items: [] } 格式
+  return { items: response.data };
 };
 
 /** 获取单个宿舍详情 */
 export const getDormitoryById = async (
   dormitoryId: number
-): Promise<DormitoryDetailResponse> => {
-  const response = await apiClient.get<DormitoryDetailResponse>(
+): Promise<Dormitory> => {
+  const response = await apiClient.get<Dormitory>(
     `/dormitories/${dormitoryId}`
   );
   return response.data;

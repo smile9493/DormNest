@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Building2, User, Lock, AlertCircle } from 'lucide-react';
+import { Building2, User, Lock, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function Login() {
@@ -9,6 +9,17 @@ export default function Login() {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // 自动消失错误提示
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -91,26 +102,35 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* 错误提示 */}
               {error && (
-                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <p className="text-sm">{error}</p>
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-lg shadow-sm animate-fade-in">
+                  <div className="flex-shrink-0 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <p className="text-sm text-red-700 font-medium flex-1">{error}</p>
+                  <button
+                    type="button"
+                    onClick={() => setError('')}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    ×
+                  </button>
                 </div>
               )}
 
               {/* 用户名输入 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   用户名
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-[#1E40AF]">
+                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-[#1E40AF] transition-colors" />
                   </div>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                    className="block w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-0 focus:border-[#1E40AF] transition-all outline-none bg-gray-50 focus:bg-white hover:bg-white text-gray-900 placeholder-gray-400"
                     placeholder="请输入用户名"
                     required
                   />
@@ -119,38 +139,51 @@ export default function Login() {
 
               {/* 密码输入 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   密码
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors">
+                    <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-[#1E40AF] transition-colors" />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                    className="block w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-0 focus:border-[#1E40AF] transition-all outline-none bg-gray-50 focus:bg-white hover:bg-white text-gray-900 placeholder-gray-400"
                     placeholder="请输入密码"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
               </div>
 
               {/* 记住登录 */}
               <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">记住登录</span>
+                <label className="flex items-center cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      className="w-5 h-5 text-[#1E40AF] border-2 border-gray-300 rounded focus:ring-[#1E40AF] focus:ring-2 cursor-pointer transition-all"
+                    />
+                  </div>
+                  <span className="ml-2.5 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">记住密码</span>
                 </label>
                 <a
                   href="#"
-                  className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                  className="text-sm text-[#1E40AF] hover:text-[#1E3A8A] transition-colors font-medium hover:underline"
                 >
                   忘记密码？
                 </a>
@@ -160,11 +193,11 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3.5 px-4 bg-gradient-to-r from-[#1E40AF] to-[#3B82F6] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-[#1E40AF]/50 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-lg"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     登录中...
                   </span>
                 ) : (
@@ -178,7 +211,7 @@ export default function Login() {
                 还没有账号？{' '}
                 <a
                   href="#"
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  className="text-[#1E40AF] hover:text-[#1E3A8A] font-semibold transition-colors hover:underline"
                 >
                   立即注册
                 </a>

@@ -1,13 +1,16 @@
 import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/auth';
+import type { UserInfo } from '@/types/api';
 
-export type UserRole = 'admin' | 'student' | 'repairman';
+export type UserRole = 'admin' | 'dorm_manager' | 'student';
 
 export interface User {
-  id: string;
+  id: number;
   username: string;
   name: string;
   role: UserRole;
-  avatar?: string;
+  email?: string;
+  phone?: string;
 }
 
 interface AuthContextType {
@@ -20,8 +23,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = 'dormnest_token';
-const USER_KEY = 'dormnest_user';
+const USER_KEY = 'user_info';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -30,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 从本地存储恢复用户信息
     const storedUser = localStorage.getItem(USER_KEY);
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem('access_token');
 
     if (storedUser && token) {
       try {
@@ -38,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('Failed to parse stored user:', error);
         localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem('access_token');
       }
     }
     setIsLoading(false);
@@ -46,41 +48,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      // TODO: 实际应该调用后端 API
-      // const response = await axios.post('/api/v1/auth/login', { username, password });
+      // 调用真实API登录
+      const response = await apiLogin(username, password);
 
-      // 模拟登录 - 根据 PRD 文档的三种角色
-      let mockUser: User;
-      if (username === 'admin') {
-        mockUser = {
-          id: '1',
-          username: 'admin',
-          name: '系统管理员',
-          role: 'admin',
-        };
-      } else if (username === 'student') {
-        mockUser = {
-          id: '2',
-          username: 'student',
-          name: '张三',
-          role: 'student',
-        };
-      } else if (username === 'repairman') {
-        mockUser = {
-          id: '3',
-          username: 'repairman',
-          name: '李师傅',
-          role: 'repairman',
-        };
-      } else {
-        throw new Error('用户名或密码错误');
-      }
+      // 转换用户信息
+      const userInfo: User = {
+        id: response.user.id,
+        username: response.user.username,
+        name: response.user.real_name || response.user.username,
+        role: response.user.role as UserRole,
+        email: response.user.email,
+        phone: response.user.phone,
+      };
 
-      const mockToken = 'mock-jwt-token-' + Date.now();
-
-      localStorage.setItem(TOKEN_KEY, mockToken);
-      localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
-      setUser(mockUser);
+      // 保存用户信息到本地存储
+      localStorage.setItem(USER_KEY, JSON.stringify(userInfo));
+      setUser(userInfo);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -88,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
+    apiLogout();
     localStorage.removeItem(USER_KEY);
     setUser(null);
   };

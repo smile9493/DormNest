@@ -136,3 +136,98 @@ export interface ApiError {
   message: string;
   details?: Record<string, unknown>;
 }
+
+/** 报修工单状态 */
+export type RepairStatus = 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
+
+/** 报修工单信息 */
+export interface Repair {
+  id: number;
+  title: string;
+  description: string;
+  type: string;
+  priority: 'low' | 'medium' | 'high';
+  status: RepairStatus;
+  location: string;
+  reporter_id: number;
+  reporter_name?: string;
+  handler_id?: number;
+  handler_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** 报修工单列表请求参数 */
+export interface RepairsRequest extends PaginationParams {
+  status?: RepairStatus;
+}
+
+/** 报修工单列表响应 */
+export type RepairsResponse = PaginatedData<Repair>;
+
+/** 费用类型 */
+export type ChargeType = 'accommodation' | 'electricity' | 'water' | 'other';
+
+/** 费用状态 */
+export type ChargeStatus = 'pending' | 'paid' | 'overdue';
+
+/** 费用信息 */
+export interface Charge {
+  id: number;
+  type: ChargeType;
+  amount: number;
+  status: ChargeStatus;
+  student_id: number;
+  student_name?: string;
+  dormitory_id?: number;
+  dormitory_room?: string;
+  semester: string;
+  paid_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** 费用列表响应 */
+export type ChargesResponse = PaginatedData<Charge>;
+
+/** 公告信息 */
+export interface Announcement {
+  announcement_id: number;
+  title: string;
+  content: string;
+  category?: string;
+  is_top: boolean;
+  status: string;
+  publisher_id: number;
+  publish_time?: string;
+  expire_time?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** 公告列表响应 */
+export type AnnouncementsResponse = PaginatedData<Announcement>;
+
+/** 入住率统计 */
+export interface OccupancyStatistics {
+  total_dormitories: number;
+  occupied_dormitories: number;
+  available_dormitories: number;
+  occupancy_rate: number;
+}
+
+/** 报修统计 */
+export interface RepairStatistics {
+  total_repairs: number;
+  pending_repairs: number;
+  in_progress_repairs: number;
+  completed_repairs: number;
+}
+
+/** 费用统计 */
+export interface ChargeStatistics {
+  total_amount: number;
+  paid_amount: number;
+  pending_amount: number;
+  overdue_amount: number;
+}

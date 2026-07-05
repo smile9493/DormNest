@@ -31,3 +31,35 @@ export {
   checkIn,
   checkOut,
 } from './students';
+
+// 报修管理 API
+export {
+  getRepairs,
+  getRepairById,
+  createRepair,
+  updateRepairStatus,
+} from './repairs';
+
+// 费用管理 API
+export {
+  getMyCharges,
+  getAllCharges,
+  getChargeById,
+  payCharge,
+} from './charges';
+
+// 公告通知 API
+export {
+  getAnnouncements,
+  getAnnouncementById,
+  createAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncement,
+} from './announcements';
+
+// 统计数据 API
+export {
+  getOccupancyStatistics,
+  getRepairStatistics,
+  getChargeStatistics,
+} from './statistics';

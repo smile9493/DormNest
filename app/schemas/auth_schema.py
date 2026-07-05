@@ -20,6 +20,23 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class UserInfo(BaseModel):
+    """用户信息模型"""
+    id: int
+    username: str
+    real_name: Optional[str] = None
+    role: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+
+class LoginResponse(BaseModel):
+    """登录响应模型"""
+    access_token: str
+    token_type: str
+    user: UserInfo
+
+
 class PasswordChange(BaseModel):
     """修改密码请求模型"""
     old_password: str
