@@ -1,0 +1,15 @@
+[Unit]
+Description=DormNest 宿舍管理系统 FastAPI 服务
+After=network.target mysql.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/dormitory
+Environment="PATH=/var/www/dormitory/venv/bin"
+ExecStart=/var/www/dormitory/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
